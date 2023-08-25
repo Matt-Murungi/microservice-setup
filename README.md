@@ -22,7 +22,7 @@ To get the application up and running:
    ```
    uvicorn order_service.main:app
       ```
-5. Launch the swagger doc
+5. Launch the swagger doc to view the documentation for the implemented endpoints.
       ```
       http://127.0.0.1:8000/docs
       ```
