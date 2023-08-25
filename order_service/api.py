@@ -1,5 +1,12 @@
+import httpx
 from fastapi import APIRouter, HTTPException
-from .models import OrderCreate, Order, OrderStatus, ProductLocation, Product
+from .models import (
+    OrderCreate,
+    Order,
+    OrderStatus,
+    ProductLocation,
+    Product,
+)
 
 
 router = APIRouter()
@@ -14,7 +21,6 @@ def create_order(order_data: OrderCreate):
     order_id = order_id_counter
     order_id_counter += 1
     if not order_data.products and len(order_data.products) == 0:
-
         raise HTTPException(status_code=422, detail="Product list cannot be empty")
 
     assigned_products = []
@@ -42,6 +48,45 @@ def create_order(order_data: OrderCreate):
     )
     orders_db[order_id] = new_order
     return new_order
+
+
+@router.post("/alert-shipping/")
+async def alert_shipping(order_data: OrderCreate):
+    shipping_alert_data = {
+        "order_id": order_data.order_id,
+        "customer_id": order_data.customer_id,
+    }
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://127.0.0.1:8080/api/shipping/receive", json=shipping_alert_data
+            )
+            response.raise_for_status()
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=500, detail=f"Error alerting Shipping Service, {e}")
+
+    return {"message": "Alert sent to Shipping service"}
+
+
+@router.post("/notify/")
+async def notify_notification_service(order_data: OrderCreate):
+    notification_data = {
+        "order_id": order_data.order_id,
+        "status": "pending",
+    }
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://127.0.0.1:8081/notifications/send", json=notification_data
+            )
+            response.raise_for_status()
+    except httpx.HTTPError as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error notifying Notification Service, {e}"
+        )
+
+    return {"message": "Notification sent to Notification Service"}
 
 
 @router.get("/{order_id}", response_model=Order)

@@ -31,3 +31,5 @@ class Order(BaseModel):
     customer_id: int
     products: List[Product]
     order_status: OrderStatus = None
+
+
