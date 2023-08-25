@@ -13,8 +13,8 @@ def create_order(order_data: OrderCreate):
     global order_id_counter
     order_id = order_id_counter
     order_id_counter += 1
-    if not order_data.products and len(order_data.products) == 0:
 
+    if not order_data.products and len(order_data.products) == 0:
         raise HTTPException(status_code=422, detail="Product list cannot be empty")
 
     assigned_products = []
