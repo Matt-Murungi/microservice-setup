@@ -1,4 +1,5 @@
 import httpx
+from typing import List
 from fastapi import APIRouter, HTTPException
 from .models import (
     OrderCreate,
@@ -64,7 +65,9 @@ async def alert_shipping(order_data: OrderCreate):
             )
             response.raise_for_status()
     except httpx.HTTPError as e:
-        raise HTTPException(status_code=500, detail=f"Error alerting Shipping Service, {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error alerting Shipping Service, {e}"
+        )
 
     return {"message": "Alert sent to Shipping service"}
 
@@ -96,6 +99,7 @@ def get_order(order_id: int):
     return orders_db[order_id]
 
 
+@router.get("/", response_model=List[Order])
 def get_all_orders():
     return list(orders_db.values())
 
